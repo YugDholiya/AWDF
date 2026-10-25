@@ -1,0 +1,53 @@
+name: Practical 13 CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - practical-13/**
+      - .github/workflows/practical-13-ci.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - practical-13/**
+      - .github/workflows/practical-13-ci.yml
+
+jobs:
+  lint:
+    name: Lint Practical 13 client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: practical-13/client/package-lock.json
+      - name: Install client dependencies
+        working-directory: practical-13/client
+        run: npm ci
+      - name: Lint client
+        working-directory: practical-13/client
+        run: npm run lint
+
+  build-and-test:
+    name: Build and test Practical 13
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install server dependencies
+        working-directory: practical-13/server
+        run: npm ci
+      - name: Test server
+        working-directory: practical-13/server
+        run: npm test
+      - name: Install client dependencies
+        working-directory: practical-13/client
+        run: npm ci
+      - name: Build client
+        working-directory: practical-13/client
+        run: npm run build
